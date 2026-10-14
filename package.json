@@ -1,0 +1,23 @@
+{
+  "name": "ai-frontend-curator",
+  "version": "1.0.0",
+  "description": "Automated high-signal news curator for AI & Frontend Engineering powered by DeepSeek",
+  "type": "module",
+  "scripts": {
+    "start": "tsx src/index.ts",
+    "force": "tsx src/index.ts --force",
+    "dry-run": "tsx src/index.ts --dry-run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@notionhq/client": "^2.2.15",
+    "dotenv": "^16.4.7",
+    "openai": "^4.86.1",
+    "rss-parser": "^3.13.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.8",
+    "tsx": "^4.19.3",
+    "typescript": "^5.8.2"
+  }
+}
