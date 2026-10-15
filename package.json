@@ -10,6 +10,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@google/genai": "^2.30.0",
     "@notionhq/client": "^2.2.15",
     "dotenv": "^16.4.7",
     "openai": "^4.86.1",

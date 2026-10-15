@@ -11,6 +11,7 @@ Automated, high-signal news curator tailored for modern **Frontend Engineering**
 - **DeepSeek AI Scoring & Curation**: Evaluates candidate articles with a Senior Engineering persona:
   - **High score (8–10)**: React 19, Next.js, TypeScript, Micro-Frontends, Module Federation, Rspack/Vite, Local LLMs, MCP, AI agents, production postmortems.
   - **Rejects (1–5)**: AI hype, marketing fluff, 101 beginner tutorials, crypto/Web3.
+- **API-free fallback**: If the AI request fails (or no AI key is configured), publishes up to `MAX_ARTICLES` recent source headlines instead. These are labelled **Unreviewed**, have no AI relevance score or invented summary, and skipped candidates remain available for the next run.
 - **Discord Delivery**: Posts scannable rich embeds color-coded by category (Frontend: Blue, AI: Purple, Tooling: Green).
 - **Zero-Maintenance Automation**: Runs on a free daily GitHub Action cron schedule (08:00 UTC) and automatically commits updated state back to GitHub.
 
@@ -35,6 +36,7 @@ DISCORD_WEBHOOK_URL="https://discord.com/api/webhooks/..."
 npm run dry-run
 ```
 Fetches live articles from Hacker News and RSS feeds, sends them to DeepSeek for senior curation, and prints the formatted briefing to your terminal.
+If DeepSeek is unavailable, the preview shows recent unreviewed headlines; no second API key is required.
 
 ### 4. Run Full Pipeline
 ```bash

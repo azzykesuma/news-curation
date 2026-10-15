@@ -9,7 +9,9 @@ const CATEGORY_COLORS: Record<string, number> = {
 
 export async function sendToDiscord(articles: CuratedArticle[]): Promise<boolean> {
   if (!CONFIG.discordWebhookUrl) {
-    console.log("[Discord] DISCORD_WEBHOOK_URL not configured, skipping Discord delivery.");
+    console.warn(
+      "⚠️ [Discord] Webhook URL not configured! Please set DISCORD_WEBHOOK_URL or WEBHOOK_API in .env or GitHub Secrets."
+    );
     return false;
   }
 
@@ -18,11 +20,16 @@ export async function sendToDiscord(articles: CuratedArticle[]): Promise<boolean
     return false;
   }
 
+  console.log(`[Discord] Preparing ${articles.length} articles for webhook delivery...`);
+
   // Discord supports a maximum of 10 embeds per webhook POST
   const embeds = articles.slice(0, 10).map((item) => {
     const color = CATEGORY_COLORS[item.category] || 0x95a5a6;
-    const title = `[${item.category}] ${item.title} (${item.relevance_score}/10)`.slice(0, 250);
-    const description = `**TL;DR:** ${item.tldr}\n\n**Why it matters:**\n${item.why_it_matters}`.slice(0, 4000);
+    const unscored = item.relevance_score === 0;
+    const title = `[${item.category}] ${item.title}${unscored ? " (Unreviewed)" : ` (${item.relevance_score}/10)`}`.slice(0, 250);
+    const description = unscored
+      ? `**Source excerpt:** ${item.tldr}\n\n${item.why_it_matters}`.slice(0, 4000)
+      : `**TL;DR:** ${item.tldr}\n\n**Why it matters:**\n${item.why_it_matters}`.slice(0, 4000);
 
     return {
       title,
@@ -30,39 +37,35 @@ export async function sendToDiscord(articles: CuratedArticle[]): Promise<boolean
       description,
       color,
       footer: {
-        text: `Relevance: ${item.relevance_score}/10 • Curated by AI News Curator`,
+        text: unscored ? "Unreviewed headline • No AI curation" : `Relevance: ${item.relevance_score}/10 • Curated by AI News Curator`,
       },
     };
   });
 
   const today = new Date().toISOString().split("T")[0];
   const payload = {
-    content: `☕ **Daily Frontend & AI Briefing — ${today}**\n*Here are the top ${embeds.length} curated engineering updates for today:*`,
+    content: `☕ **Daily Frontend & AI Briefing — ${today}**\n*${articles[0].relevance_score === 0 ? "AI unavailable: recent, unreviewed source headlines" : "Top curated engineering updates"} (${embeds.length}):*`,
     embeds,
   };
 
   try {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 10000);
-
     const res = await fetch(CONFIG.discordWebhookUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
-      signal: controller.signal,
+      signal: AbortSignal.timeout(8000),
     });
-    clearTimeout(timeout);
 
     if (!res.ok) {
       const errText = await res.text();
-      console.error(`[Discord] Webhook returned HTTP ${res.status}: ${errText}`);
+      console.error(`❌ [Discord] Webhook returned HTTP ${res.status}: ${errText}`);
       return false;
     }
 
-    console.log(`[Discord] Successfully posted ${embeds.length} curated embeds to Discord.`);
+    console.log(`✅ [Discord] Successfully posted ${embeds.length} curated embeds to Discord!`);
     return true;
   } catch (err: any) {
-    console.error("[Discord] Network error sending webhook:", err.message || err);
+    console.error("❌ [Discord] Network error sending webhook:", err.message || err);
     return false;
   }
 }

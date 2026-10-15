@@ -18,7 +18,9 @@ export async function sendToNotion(articles: CuratedArticle[]): Promise<boolean>
 
   for (const item of articles) {
     try {
-      const summaryText = `${item.tldr}\n\nWhy it matters:\n${item.why_it_matters}`.slice(0, 2000);
+      const summaryText = (item.relevance_score === 0
+        ? `Unreviewed source excerpt: ${item.tldr}\n\n${item.why_it_matters}`
+        : `${item.tldr}\n\nWhy it matters:\n${item.why_it_matters}`).slice(0, 2000);
 
       await notion.pages.create({
         parent: { database_id: CONFIG.notionDatabaseId },
@@ -30,7 +32,7 @@ export async function sendToNotion(articles: CuratedArticle[]): Promise<boolean>
             select: { name: item.category },
           },
           Score: {
-            number: item.relevance_score,
+            number: item.relevance_score === 0 ? null : item.relevance_score,
           },
           URL: {
             url: item.url,

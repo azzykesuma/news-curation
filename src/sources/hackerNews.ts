@@ -19,14 +19,10 @@ export async function fetchHackerNews(): Promise<RawItem[]> {
     const endpoint = `https://hn.algolia.com/api/v1/search_by_date?query=${encodedTopic}&tags=story&numericFilters=created_at_i>${sinceTimestamp},points>${CONFIG.hn.minPoints}&hitsPerPage=15`;
 
     try {
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 8000);
-
       const response = await fetch(endpoint, {
-        signal: controller.signal,
+        signal: AbortSignal.timeout(6000),
         headers: { "User-Agent": "AIFES-NewsCurator/1.0" },
       });
-      clearTimeout(timeout);
 
       if (!response.ok) return [];
 

@@ -10,15 +10,18 @@ export async function curateWithDeepSeek(rawItems: RawItem[]): Promise<CuratedAr
 
   if (!CONFIG.deepseekApiKey) {
     throw new Error(
-      "[DeepSeek] DEEPSEEK_API_KEY is not set in environment or .env file. Please provide your key to run AI curation."
+      "[DeepSeek] DEEPSEEK_API_KEY is not set in environment or GitHub Secrets. Please provide your key to run AI curation."
     );
   }
 
   console.log(`[DeepSeek] Curating ${rawItems.length} candidate items using model "${CONFIG.deepseekModel}"...`);
 
+  const deadlineMs = 60000;
   const client = new OpenAI({
     apiKey: CONFIG.deepseekApiKey,
     baseURL: "https://api.deepseek.com",
+    timeout: deadlineMs,
+    maxRetries: 0, // Avoid silently waiting for a second full request on timeout or 5xx.
   });
 
   const systemPrompt = `You are a Staff Frontend & Applied AI Engineer curating an elite daily briefing for developers.
@@ -61,7 +64,7 @@ You MUST respond with valid JSON matching this structure:
 }`;
 
   // Limit candidate payload to avoid token bloat
-  const candidateBatch = rawItems.slice(0, 60).map((item) => ({
+  const candidateBatch = rawItems.slice(0, 50).map((item) => ({
     title: item.title,
     url: item.url,
     source: item.source,
@@ -70,6 +73,8 @@ You MUST respond with valid JSON matching this structure:
 
   const userContent = `Here are the candidate articles to curate:\n${JSON.stringify(candidateBatch, null, 2)}`;
 
+  const requestStart = Date.now();
+  console.log(`[DeepSeek] Request started (${candidateBatch.length} candidates; ${deadlineMs / 1000}s deadline).`);
   try {
     const response = await client.chat.completions.create({
       model: CONFIG.deepseekModel,
@@ -79,7 +84,17 @@ You MUST respond with valid JSON matching this structure:
       ],
       response_format: { type: "json_object" },
       temperature: 0.2,
-    });
+    }, { signal: AbortSignal.timeout(deadlineMs) });
+
+    console.log(`[DeepSeek] Response received in ${((Date.now() - requestStart) / 1000).toFixed(1)}s (HTTP 200).`);
+
+    if ((response as any).error) {
+      throw new Error(`DeepSeek API server error: ${(response as any).error.message || JSON.stringify((response as any).error)}`);
+    }
+
+    if (!response.choices || response.choices.length === 0) {
+      throw new Error(`DeepSeek returned no choices: ${JSON.stringify(response)}`);
+    }
 
     const content = response.choices[0]?.message?.content;
     if (!content) {
@@ -96,7 +111,10 @@ You MUST respond with valid JSON matching this structure:
     console.log(`[DeepSeek] Successfully curated ${validArticles.length} high-signal articles.`);
     return validArticles;
   } catch (err: any) {
-    console.error("[DeepSeek] API Error during curation:", err.message || err);
+    console.error(
+      `[DeepSeek] Curation failed after ${((Date.now() - requestStart) / 1000).toFixed(1)}s ` +
+      `(status: ${err.status ?? "no HTTP response"}, error: ${err.message || err}).`
+    );
     throw err;
   }
 }

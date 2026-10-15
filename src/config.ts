@@ -5,6 +5,10 @@ export const CONFIG = {
   deepseekApiKey: process.env.DEEPSEEK_API_KEY || "",
   deepseekModel: process.env.DEEPSEEK_MODEL || "deepseek-chat",
 
+  // Gemini AI (Fallback or Alternative)
+  geminiApiKey: process.env.GEMINI_API_KEY || "",
+  geminiModel: process.env.GEMINI_MODEL || "gemini-2.5-flash",
+
   // Delivery
   discordWebhookUrl: process.env.DISCORD_WEBHOOK_URL || process.env.WEBHOOK_API || "",
   notionToken: process.env.NOTION_TOKEN || "",

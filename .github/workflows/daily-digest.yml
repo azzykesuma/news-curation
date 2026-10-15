@@ -4,6 +4,12 @@ on:
   schedule:
     - cron: "0 1 * * *" # Runs daily at 01:00 UTC (08:00 AM WIB)
   workflow_dispatch:    # Allows manual runs from GitHub Actions UI
+    inputs:
+      force:
+        description: "Force re-curation (bypass seen.json deduplication)"
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   contents: write       # Required to commit updated seen.json back to repo
@@ -11,6 +17,8 @@ permissions:
 jobs:
   curate-and-publish:
     runs-on: ubuntu-latest
+    timeout-minutes: 5  # Hard safety limit to prevent jobs from ever hanging
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -27,9 +35,12 @@ jobs:
       - name: Run Curator Pipeline
         env:
           DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
-          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL || secrets.WEBHOOK_API }}
+          WEBHOOK_API: ${{ secrets.WEBHOOK_API }}
           NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
           NOTION_DATABASE_ID: ${{ secrets.NOTION_DATABASE_ID }}
+          FORCE_RUN: ${{ inputs.force || 'false' }}
         run: npm start
 
       - name: Commit updated seen.json
