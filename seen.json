@@ -544,5 +544,22 @@
   "https://simonwillison.net/2026/Nov/11/llm",
   "https://simonwillison.net/2026/Nov/11/anthropic-ipo-roadshow",
   "https://huggingface.co/blog/token-pooling",
-  "https://github.com/vercel/next.js/releases/tag/v16.5.0-canary.48"
+  "https://github.com/vercel/next.js/releases/tag/v16.5.0-canary.48",
+  "https://ray.hatchet.run",
+  "https://www.easel.sh/blog/lambda-web-functions-idle-memory",
+  "https://apron.chat",
+  "https://github.com/hyperionaidev/smolmaxxing",
+  "https://daniel.haxx.se/blog/2026/11/11/30-years-of-internet-transfers-with-curl",
+  "https://apnews.com/article/nvidia-megaspeed-china-singapore-huang-5403f152a601cf82ce939f1d24fffa0f",
+  "https://pirateface.co/articles/every-ai-model-should-be-a-torrent",
+  "https://github.com/Parcha-ai/agentrun/blob/main/README.md",
+  "https://tratt.net/laurie/blog/2026/adapting_cpython_for_yk.html",
+  "https://vercel.com/changelog/inkling-2-small-now-available-on-ai-gateway",
+  "https://vercel.com/changelog/gemini-4-hydrogen-now-available-on-ai-gateway",
+  "https://smashingmagazine.com/2026/11/should-you-add-ai-audit-product-teams",
+  "https://css-tricks.com/beyond-12-columns",
+  "https://simonwillison.net/2026/Nov/12/llm-gemini",
+  "https://huggingface.co/blog/ibm-granite/llmon-an-llm-native-markup-language-now-in-granite",
+  "https://huggingface.co/blog/3d-lora-finetuning",
+  "https://github.com/vercel/next.js/releases/tag/v16.5.0-canary.49"
 ]
